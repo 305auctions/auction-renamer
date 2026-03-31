@@ -7,38 +7,37 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0efe9;color:#1a1a1a;padding:1.5rem 1rem 6rem;min-height:100vh}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0efe9;color:#1a1a1a;padding:1.5rem 1rem 5rem;min-height:100vh}
 #app{max-width:1100px;margin:0 auto}
 h1{font-size:20px;font-weight:600;margin-bottom:4px}
-.sub{font-size:13px;color:#777;margin-bottom:1.25rem}
-.drop-zone{border:2px dashed #ccc;border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;background:#fff;margin-bottom:1rem;transition:all 0.15s}
+.sub{font-size:13px;color:#777;margin-bottom:1rem}
+.top-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;padding:8px 12px;background:#fff;border:1px solid #e0e0da;border-radius:8px}
+.top-bar span{font-size:12px;color:#888;margin-right:4px}
+.session-status{font-size:11px;color:#16a34a;margin-left:auto}
+.session-status.warn{color:#d97706}
+#session-file-input{display:none}
+.drop-zone{border:2px dashed #ccc;border-radius:10px;padding:1.25rem;text-align:center;cursor:pointer;background:#fff;margin-bottom:1rem;transition:all 0.15s}
 .drop-zone:hover,.drop-zone.over{border-color:#555;background:#fafaf7}
-.drop-zone h3{font-size:15px;font-weight:500;margin-bottom:4px}
-.drop-zone p{font-size:13px;color:#888}
+.drop-zone h3{font-size:14px;font-weight:500;margin-bottom:3px}
+.drop-zone p{font-size:12px;color:#888}
 .drop-zone a{color:#2563eb;text-decoration:none}
 #file-input{display:none}
-.prog-wrap{background:#e5e5e0;border-radius:4px;height:5px;margin:8px 0;display:none;overflow:hidden}
+.prog-wrap{background:#e5e5e0;border-radius:4px;height:5px;margin:6px 0;display:none;overflow:hidden}
 .prog-fill{height:100%;background:#2563eb;border-radius:4px;transition:width 0.1s;width:0%}
 .status{font-size:13px;color:#666;padding:3px 0;min-height:18px}
 .status.ok{color:#16a34a}
 .status.err{color:#dc2626}
-
-/* POOL */
 .pool-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px}
 .pool-header h2{font-size:15px;font-weight:600}
 .pool-count{font-size:12px;color:#888;font-weight:400;margin-left:6px}
-#pool-grid{display:flex;flex-wrap:wrap;gap:6px;min-height:60px;background:#fff;border:1px solid #ddd;border-radius:10px;padding:10px;margin-bottom:1.5rem}
+#pool-grid{display:flex;flex-wrap:wrap;gap:6px;min-height:56px;background:#fff;border:1px solid #ddd;border-radius:10px;padding:10px;margin-bottom:1.5rem}
 #pool-grid.drag-over-pool{background:#f0f7ff;border-color:#93c5fd}
-.pool-empty{font-size:13px;color:#aaa;padding:1rem;width:100%;text-align:center}
-
-/* FLOATING TOOLBAR */
-.float-toolbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;padding:10px 1.5rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap;z-index:1000;box-shadow:0 -2px 12px rgba(0,0,0,0.08)}
+.pool-empty{font-size:13px;color:#aaa;padding:0.75rem;width:100%;text-align:center}
+.float-toolbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;padding:9px 1.5rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap;z-index:1000;box-shadow:0 -2px 12px rgba(0,0,0,0.08)}
 .float-toolbar .start-num-wrap{display:flex;align-items:center;gap:6px;font-size:13px;color:#555}
-.float-toolbar .start-num-wrap input{width:72px;font-size:14px;font-weight:600;padding:4px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#1a1a1a;font-family:inherit}
-.float-toolbar .divider{width:1px;height:28px;background:#e0e0da;margin:0 4px}
-
-/* BUTTONS */
-button{padding:7px 15px;font-size:13px;border-radius:7px;border:1px solid #ddd;background:#fff;color:#1a1a1a;cursor:pointer;font-family:inherit;transition:all 0.1s;white-space:nowrap}
+.float-toolbar .start-num-wrap input{width:70px;font-size:14px;font-weight:600;padding:4px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#1a1a1a;font-family:inherit}
+.vdivider{width:1px;height:26px;background:#e0e0da;margin:0 2px}
+button{padding:6px 14px;font-size:13px;border-radius:7px;border:1px solid #ddd;background:#fff;color:#1a1a1a;cursor:pointer;font-family:inherit;transition:all 0.1s;white-space:nowrap}
 button:hover{background:#f0f0eb}
 button.primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
 button.primary:hover{background:#333}
@@ -46,30 +45,28 @@ button.green{background:#16a34a;color:#fff;border-color:#16a34a}
 button.green:hover{background:#15803d}
 button.amber{background:#d97706;color:#fff;border-color:#d97706}
 button.amber:hover{background:#b45309}
+button.blue{background:#2563eb;color:#fff;border-color:#2563eb}
+button.blue:hover{background:#1d4ed8}
+button.red{background:#dc2626;color:#fff;border-color:#dc2626}
+button.red:hover{background:#b91c1c}
 button:disabled{opacity:0.4;cursor:default}
-
-/* LOT BUCKETS */
 #lots-area{display:flex;flex-direction:column;gap:10px}
 .lot-bucket{background:#fff;border:1px solid #e0e0da;border-radius:10px;overflow:hidden}
-.lot-bucket.drop-target{border:2px solid #2563eb;background:#f0f7ff}
 .bucket-header{display:flex;align-items:center;gap:10px;padding:9px 14px;background:#f7f7f2;border-bottom:1px solid #e5e5e0;flex-wrap:wrap}
 .lot-label{font-size:12px;color:#888;white-space:nowrap}
 .lot-num-input{width:74px;font-size:15px;font-weight:700;padding:3px 8px;border:1px solid #ccc;border-radius:6px;background:#fff;color:#1a1a1a;font-family:inherit}
 .lot-num-input:focus{outline:none;border-color:#555}
 .photo-count{font-size:12px;color:#888;background:#f0f0eb;padding:2px 8px;border-radius:5px}
 .primary-badge{font-size:11px;color:#d97706;background:#fef9c3;padding:2px 8px;border-radius:5px;font-weight:500}
+.missing-badge{font-size:11px;color:#dc2626;background:#fee2e2;padding:2px 8px;border-radius:5px}
 .bucket-actions{margin-left:auto;display:flex;gap:5px;flex-wrap:wrap}
 .bucket-actions button{font-size:11px;padding:3px 9px}
-
-/* IMAGE GRID — horizontal scroll for easy reordering */
 .bucket-grid{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;padding:12px 14px;min-height:100px;align-items:flex-start}
-.bucket-grid::-webkit-scrollbar{height:6px}
+.bucket-grid::-webkit-scrollbar{height:5px}
 .bucket-grid::-webkit-scrollbar-track{background:#f0f0eb;border-radius:3px}
 .bucket-grid::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
 .bucket-grid.drop-target-grid{background:#f0f7ff}
 .bucket-empty{font-size:12px;color:#bbb;padding:4px;white-space:nowrap}
-
-/* IMAGE CARDS */
 .img-card{position:relative;flex-shrink:0;width:90px;border:1px solid #e0e0da;border-radius:6px;overflow:hidden;background:#f5f5f0;user-select:none;transition:opacity 0.15s,transform 0.15s;cursor:grab}
 .img-card:active{cursor:grabbing}
 .img-card:hover{border-color:#aaa;transform:translateY(-2px)}
@@ -77,16 +74,16 @@ button:disabled{opacity:0.4;cursor:default}
 .img-card.drag-over-left{border-left:3px solid #2563eb}
 .img-card.drag-over-right{border-right:3px solid #2563eb}
 .img-card.is-primary{border:2px solid #d97706}
+.img-card.is-missing{border:2px dashed #dc2626;background:#fff5f5}
 .img-card img{width:90px;height:68px;object-fit:cover;display:block;pointer-events:none}
+.img-card .missing-thumb{width:90px;height:68px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#dc2626;background:#fff5f5;text-align:center;padding:4px;line-height:1.4}
 .img-card .idx{position:absolute;top:2px;left:2px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.6);color:#fff;padding:1px 5px;border-radius:3px}
 .img-card.is-primary .idx{background:rgba(217,119,6,0.9)}
+.img-card.is-missing .idx{background:rgba(220,38,38,0.8)}
 .img-card .rm{position:absolute;top:2px;right:2px;width:16px;height:16px;background:rgba(0,0,0,0.55);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:9px;color:#fff;z-index:2}
 .img-card .rm:hover{background:rgba(180,0,0,0.85)}
 .img-card .lbl{font-size:9px;color:#999;padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#fff}
-
 .rename-preview{font-size:10px;color:#aaa;padding:2px 14px 8px;font-family:'Courier New',monospace;line-height:1.9;overflow-x:auto;white-space:nowrap}
-
-/* DOWNLOAD */
 .dl-section{background:#fff;border:1px solid #e0e0da;border-radius:10px;padding:1.25rem;margin-top:1.5rem}
 .dl-section h3{font-size:14px;font-weight:600;margin-bottom:4px}
 .dl-section .note{font-size:12px;color:#888;margin-bottom:10px}
@@ -95,16 +92,33 @@ button:disabled{opacity:0.4;cursor:default}
 .dl-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 .dl-row-label{font-size:13px;font-weight:500;min-width:160px}
 hr.divider{border:none;border-top:1px solid #e5e5e0;margin:12px 0}
+.restore-banner{background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.restore-banner strong{color:#a16207}
 </style>
 </head>
 <body>
 <div id="app">
   <h1>Auction Flex Image Renamer</h1>
-  <p class="sub">Create lot buckets &rarr; drag photos from Windows Explorer directly into each bucket &rarr; reorder by dragging &rarr; download zip.</p>
+  <p class="sub">Create lot buckets &rarr; drag photos in &rarr; reorder &rarr; download. Progress auto-saves every change.</p>
+
+  <!-- SESSION BAR -->
+  <div class="top-bar">
+    <span>Session:</span>
+    <button class="blue" onclick="exportSession()">&#8595; Save session</button>
+    <button onclick="document.getElementById('session-file-input').click()">&#8593; Load session</button>
+    <input type="file" id="session-file-input" accept=".json" onchange="importSession(this)">
+    <button class="red" onclick="clearSession()">Clear all</button>
+    <span class="session-status" id="session-status"></span>
+  </div>
+
+  <div id="restore-banner" style="display:none" class="restore-banner">
+    <strong>&#9888; Session restored.</strong>
+    <span id="restore-msg"></span>
+  </div>
 
   <div class="drop-zone" id="drop-zone">
     <input type="file" id="file-input" multiple accept="image/*">
-    <h3>Optional: drop a folder to preload all images into the pool below</h3>
+    <h3>Optional: drop a folder to preload images into the pool</h3>
     <p>or <a href="#" id="browse-link">browse files</a> &nbsp;&middot;&nbsp; You can also drag directly from Windows Explorer into any lot bucket &nbsp;&middot;&nbsp; Nothing leaves your computer</p>
   </div>
   <div class="prog-wrap" id="prog-wrap"><div class="prog-fill" id="prog-fill"></div></div>
@@ -120,9 +134,7 @@ hr.divider{border:none;border-top:1px solid #e5e5e0;margin:12px 0}
       </div>
     </div>
     <div id="pool-grid"><div class="pool-empty">Drop a folder above, or drag directly from Windows Explorer into lot buckets below.</div></div>
-
     <div id="lots-area"></div>
-
     <div class="dl-section" id="dl-section" style="display:none">
       <h3>Download options</h3>
       <p class="note">First photo in each bucket = primary (-1) image shown with gold ★ border.</p>
@@ -144,22 +156,24 @@ hr.divider{border:none;border-top:1px solid #e5e5e0;margin:12px 0}
   </div>
 </div>
 
-<!-- FLOATING TOOLBAR -->
 <div class="float-toolbar">
   <div class="start-num-wrap">
     <label>Starting lot #</label>
     <input type="text" id="start-num" value="101" oninput="onStartNumChange()">
   </div>
-  <div class="divider"></div>
+  <div class="vdivider"></div>
   <button class="primary" onclick="addLot()">+ Add lot bucket</button>
   <button id="add-assign-btn" onclick="addLotAndAssign()" disabled>+ New lot &amp; move selected</button>
 </div>
 
 <script>
 const $=id=>document.getElementById(id);
+const STORAGE_KEY='af_renamer_session';
 let pool=[],lots=[],lotIdCounter=0,nextLotNumber=101;
-let dragItem=null; // {type:'pool'|'lot', lotId, index, item, multi}
+let dragItem=null;
+let saveTimer=null;
 
+// ─── FILE LOADING ───────────────────────────────────────────────
 $('browse-link').addEventListener('click',e=>{e.preventDefault();$('file-input').click()});
 $('drop-zone').addEventListener('dragover',e=>{e.preventDefault();$('drop-zone').classList.add('over')});
 $('drop-zone').addEventListener('dragleave',()=>$('drop-zone').classList.remove('over'));
@@ -171,24 +185,56 @@ async function loadFiles(files){
   if(!imgs.length){setStatus('No image files found.','err');return;}
   $('prog-wrap').style.display='block';
   setStatus(`Loading ${imgs.length} images...`,'');
+  // If restoring, match files to missing slots first
+  const missingNames=new Set();
+  lots.forEach(lot=>lot.images.forEach(img=>{if(img.missing)missingNames.add(img.origName);}));
   for(let i=0;i<imgs.length;i++){
-    pool.push({file:imgs[i],url:URL.createObjectURL(imgs[i]),origName:imgs[i].name,selected:false});
+    const f=imgs[i];
+    const url=URL.createObjectURL(f);
+    // Fill missing slots in lots
+    let filled=false;
+    if(missingNames.has(f.name)){
+      lots.forEach(lot=>lot.images.forEach(img=>{
+        if(img.origName===f.name&&img.missing){img.url=url;img.file=f;delete img.missing;filled=true;}
+      }));
+    }
+    if(!filled) pool.push({file:f,url,origName:f.name,selected:false});
     if(i%100===0){setProgress((i+1)/imgs.length);await tick();}
   }
   setProgress(1);$('prog-wrap').style.display='none';
   setStatus(`${imgs.length} images loaded.`,'ok');
-  renderPool();
+  autoSave();renderPool();renderLots();
 }
 
+// ─── POOL ────────────────────────────────────────────────────────
 function renderPool(){
   const grid=$('pool-grid');grid.innerHTML='';
   $('pool-count').textContent=`(${pool.length} image${pool.length!==1?'s':''})`;
-  if(!pool.length){grid.innerHTML='<div class="pool-empty">Pool empty. Drag from Windows Explorer into lot buckets below.</div>';updateDlSection();return;}
+  if(!pool.length){grid.innerHTML='<div class="pool-empty">Pool empty. Drag from Windows Explorer into lot buckets below.</div>';updateDlSection();updateSelectionButtons();return;}
   pool.forEach((item,i)=>{
-    const card=makePoolCard(item,i);
+    const card=document.createElement('div');
+    card.className='img-card';
+    card.style.outline=item.selected?'2px solid #2563eb':'none';
+    card.style.outlineOffset='2px';
+    card.draggable=true;
+    const im=document.createElement('img');im.src=item.url;im.alt=item.origName;
+    const lbl=document.createElement('div');lbl.className='lbl';lbl.textContent=item.origName;
+    card.appendChild(im);card.appendChild(lbl);
+    card.addEventListener('click',e=>{
+      if(e.shiftKey){const last=pool.findLastIndex(p=>p.selected);if(last>=0){const lo=Math.min(last,i),hi=Math.max(last,i);for(let j=lo;j<=hi;j++)pool[j].selected=true;}else pool[i].selected=!pool[i].selected;}
+      else if(e.ctrlKey||e.metaKey){pool[i].selected=!pool[i].selected;}
+      else pool[i].selected=!pool[i].selected;
+      updateSelectionButtons();renderPool();
+    });
+    card.addEventListener('dragstart',e=>{
+      dragItem={type:'pool',index:i,item:pool[i]};
+      if(pool[i].selected)dragItem.multi=pool.filter(p=>p.selected);
+      setTimeout(()=>card.classList.add('dragging'),0);
+      e.dataTransfer.effectAllowed='move';
+    });
+    card.addEventListener('dragend',()=>{card.classList.remove('dragging');dragItem=null;});
     grid.appendChild(card);
   });
-  // pool accepts drops back from lots
   grid.addEventListener('dragover',e=>{e.preventDefault();grid.classList.add('drag-over-pool')});
   grid.addEventListener('dragleave',e=>{if(!grid.contains(e.relatedTarget))grid.classList.remove('drag-over-pool')});
   grid.addEventListener('drop',e=>{
@@ -196,35 +242,10 @@ function renderPool(){
     if(!dragItem||dragItem.type!=='lot')return;
     const lot=lots.find(l=>l.id===dragItem.lotId);if(!lot)return;
     const toMove=dragItem.multi?dragItem.multi:[dragItem.item];
-    toMove.forEach(img=>{const idx=lot.images.findIndex(x=>x.origName===img.origName);if(idx>=0){lot.images.splice(idx,1);pool.push({...img,selected:false});}});
-    dragItem=null;renderPool();renderLots();
+    toMove.forEach(img=>{const idx=lot.images.findIndex(x=>x.origName===img.origName);if(idx>=0){lot.images.splice(idx,1);pool.push({...img,selected:false,file:img.file,url:img.url});}});
+    dragItem=null;autoSave();renderPool();renderLots();
   });
   updateSelectionButtons();updateDlSection();
-}
-
-function makePoolCard(item,i){
-  const card=document.createElement('div');
-  card.className='img-card';
-  card.style.outline=item.selected?'2px solid #2563eb':'none';
-  card.style.outlineOffset='2px';
-  card.draggable=true;
-  const im=document.createElement('img');im.src=item.url;im.alt=item.origName;
-  const lbl=document.createElement('div');lbl.className='lbl';lbl.textContent=item.origName;
-  card.appendChild(im);card.appendChild(lbl);
-  card.addEventListener('click',e=>{
-    if(e.shiftKey){const last=pool.findLastIndex(p=>p.selected);if(last>=0){const lo=Math.min(last,i),hi=Math.max(last,i);for(let j=lo;j<=hi;j++)pool[j].selected=true;}else pool[i].selected=!pool[i].selected;}
-    else if(e.ctrlKey||e.metaKey){pool[i].selected=!pool[i].selected;}
-    else pool[i].selected=!pool[i].selected;
-    updateSelectionButtons();renderPool();
-  });
-  card.addEventListener('dragstart',e=>{
-    dragItem={type:'pool',index:i,item:pool[i]};
-    if(pool[i].selected)dragItem.multi=pool.filter(p=>p.selected);
-    setTimeout(()=>card.classList.add('dragging'),0);
-    e.dataTransfer.effectAllowed='move';
-  });
-  card.addEventListener('dragend',()=>{card.classList.remove('dragging');dragItem=null;});
-  return card;
 }
 
 function updateSelectionButtons(){
@@ -236,9 +257,10 @@ function selectAll(){pool.forEach(p=>p.selected=true);updateSelectionButtons();r
 function clearSelection(){pool.forEach(p=>p.selected=false);updateSelectionButtons();renderPool();}
 function onStartNumChange(){const v=parseInt($('start-num').value);if(!isNaN(v))nextLotNumber=v;}
 
+// ─── LOTS ─────────────────────────────────────────────────────────
 function createLot(){
   const lot={id:++lotIdCounter,lotNumber:String(nextLotNumber),images:[]};
-  nextLotNumber++;lots.push(lot);return lot;
+  nextLotNumber++;lots.push(lot);autoSave();return lot;
 }
 function addLot(){createLot();renderLots();}
 function assignSelectedToNew(){
@@ -246,14 +268,14 @@ function assignSelectedToNew(){
   const lot=createLot();
   sel.forEach(p=>lot.images.push({file:p.file,url:p.url,origName:p.origName}));
   pool=pool.filter(p=>!p.selected);
-  renderPool();renderLots();
+  autoSave();renderPool();renderLots();
 }
 function addLotAndAssign(){assignSelectedToNew();}
 function removeLot(id){
   const lot=lots.find(l=>l.id===id);if(!lot)return;
-  lot.images.forEach(img=>pool.push({...img,selected:false}));
+  lot.images.forEach(img=>{if(!img.missing)pool.push({...img,selected:false});});
   lots=lots.filter(l=>l.id!==id);
-  renderPool();renderLots();
+  autoSave();renderPool();renderLots();
 }
 
 function renderLots(){
@@ -263,14 +285,11 @@ function renderLots(){
 }
 
 function makeLotBlock(lot){
-  const block=document.createElement('div');
-  block.className='lot-bucket';
-
-  // HEADER
+  const block=document.createElement('div');block.className='lot-bucket';
   const hdr=document.createElement('div');hdr.className='bucket-header';
   const lbl=document.createElement('span');lbl.className='lot-label';lbl.textContent='Lot #:';
   const inp=document.createElement('input');inp.className='lot-num-input';inp.type='text';inp.value=lot.lotNumber;
-  inp.addEventListener('input',e=>{lot.lotNumber=e.target.value.trim();renderLots();});
+  inp.addEventListener('input',e=>{lot.lotNumber=e.target.value.trim();autoSave();renderLots();});
   inp.addEventListener('click',e=>e.stopPropagation());
   const cnt=document.createElement('span');cnt.className='photo-count';cnt.textContent=lot.images.length+' photo'+(lot.images.length!==1?'s':'');
   hdr.appendChild(lbl);hdr.appendChild(inp);hdr.appendChild(cnt);
@@ -278,42 +297,42 @@ function makeLotBlock(lot){
   if(lot.images.length>0){
     const pb=document.createElement('span');pb.className='primary-badge';
     const ext=lot.images[0].origName.split('.').pop().toLowerCase();
-    pb.textContent=`★ Primary: ${lot.lotNumber}-1.${ext}`;
+    pb.textContent=`★ ${lot.lotNumber}-1.${ext}`;
     hdr.appendChild(pb);
+  }
+  const missing=lot.images.filter(i=>i.missing).length;
+  if(missing>0){
+    const mb=document.createElement('span');mb.className='missing-badge';
+    mb.textContent=`${missing} photo${missing>1?'s':''} need re-drop`;
+    hdr.appendChild(mb);
   }
 
   const acts=document.createElement('div');acts.className='bucket-actions';
   const upBtn=document.createElement('button');upBtn.textContent='↑ Up';
-  upBtn.onclick=()=>{const i=lots.indexOf(lot);if(i>0){lots.splice(i,1);lots.splice(i-1,0,lot);renderLots();}};
+  upBtn.onclick=()=>{const i=lots.indexOf(lot);if(i>0){lots.splice(i,1);lots.splice(i-1,0,lot);autoSave();renderLots();}};
   const dnBtn=document.createElement('button');dnBtn.textContent='↓ Down';
-  dnBtn.onclick=()=>{const i=lots.indexOf(lot);if(i<lots.length-1){lots.splice(i,1);lots.splice(i+1,0,lot);renderLots();}};
+  dnBtn.onclick=()=>{const i=lots.indexOf(lot);if(i<lots.length-1){lots.splice(i,1);lots.splice(i+1,0,lot);autoSave();renderLots();}};
   const retBtn=document.createElement('button');retBtn.textContent='Return photos';
-  retBtn.onclick=()=>{lot.images.forEach(img=>pool.push({...img,selected:false}));lot.images=[];renderPool();renderLots();};
+  retBtn.onclick=()=>{lot.images.forEach(img=>{if(!img.missing)pool.push({...img,selected:false});});lot.images=[];autoSave();renderPool();renderLots();};
   const delBtn=document.createElement('button');delBtn.textContent='Delete lot';delBtn.style.color='#dc2626';delBtn.style.borderColor='#fca5a5';
   delBtn.onclick=()=>removeLot(lot.id);
   acts.appendChild(upBtn);acts.appendChild(dnBtn);acts.appendChild(retBtn);acts.appendChild(delBtn);
   hdr.appendChild(acts);
 
-  // GRID
   const grid=document.createElement('div');grid.className='bucket-grid';
-
-  lot.images.forEach((img,ii)=>grid.appendChild(makeBucketCard(img,lot,ii,grid)));
-
+  lot.images.forEach((img,ii)=>grid.appendChild(makeBucketCard(img,lot,ii)));
   if(!lot.images.length){
     const emp=document.createElement('div');emp.className='bucket-empty';
     emp.textContent='Drop photos here — first photo becomes the ★ primary image';
     grid.appendChild(emp);
   }
 
-  // Drop onto grid (external files or from pool)
   grid.addEventListener('dragover',e=>{
-    e.preventDefault();
-    grid.classList.add('drop-target-grid');
-    // highlight card positions
+    e.preventDefault();grid.classList.add('drop-target-grid');
     const cards=[...grid.querySelectorAll('.img-card')];
     cards.forEach(c=>c.classList.remove('drag-over-left','drag-over-right'));
-    const target=getDropTarget(e,cards);
-    if(target.card) target.card.classList.add(target.side==='left'?'drag-over-left':'drag-over-right');
+    const t=getDropTarget(e,cards);
+    if(t.card)t.card.classList.add(t.side==='left'?'drag-over-left':'drag-over-right');
   });
   grid.addEventListener('dragleave',e=>{
     if(!grid.contains(e.relatedTarget)){
@@ -326,17 +345,16 @@ function makeLotBlock(lot){
     grid.classList.remove('drop-target-grid');
     grid.querySelectorAll('.img-card').forEach(c=>c.classList.remove('drag-over-left','drag-over-right'));
     const cards=[...grid.querySelectorAll('.img-card')];
-    const target=getDropTarget(e,cards);
-    const insertAt=target.card?parseInt(target.card.dataset.ii)+(target.side==='right'?1:0):lot.images.length;
+    const t=getDropTarget(e,cards);
+    const insertAt=t.card?parseInt(t.card.dataset.ii)+(t.side==='right'?1:0):lot.images.length;
     handleDropOnBucket(lot,insertAt,e);
   });
 
-  // Rename preview
   const prev=document.createElement('div');prev.className='rename-preview';
   if(lot.images.length&&lot.lotNumber){
     prev.textContent=lot.images.map((img,ii)=>{
       const ext=img.origName.split('.').pop().toLowerCase();
-      return `${lot.lotNumber}-${ii+1}.${ext}${ii===0?' ★':''}`;
+      return `${lot.lotNumber}-${ii+1}.${ext}${ii===0?' ★':''}${img.missing?' ⚠':''}`;
     }).join('   ');
   }
 
@@ -345,85 +363,190 @@ function makeLotBlock(lot){
   return block;
 }
 
-function makeBucketCard(img,lot,ii,grid){
+function makeBucketCard(img,lot,ii){
   const isPrimary=ii===0;
   const card=document.createElement('div');
-  card.className='img-card'+(isPrimary?' is-primary':'');
-  card.draggable=true;
-  card.dataset.ii=ii;
-  card.dataset.lid=lot.id;
+  card.className='img-card'+(isPrimary?' is-primary':'')+(img.missing?' is-missing':'');
+  card.draggable=true;card.dataset.ii=ii;card.dataset.lid=lot.id;
 
-  const idxBadge=document.createElement('div');idxBadge.className='idx';idxBadge.textContent=isPrimary?'★':ii+1;
-  const im=document.createElement('img');im.src=img.url;im.alt=img.origName;
+  const idxBadge=document.createElement('div');idxBadge.className='idx';
+  idxBadge.textContent=isPrimary?'★':ii+1;
+  if(img.missing)idxBadge.textContent=(isPrimary?'★ ':'')+'!';
+
+  if(img.missing){
+    const ph=document.createElement('div');ph.className='missing-thumb';ph.textContent='Drop file here: '+img.origName;
+    card.appendChild(idxBadge);card.appendChild(ph);
+  } else {
+    const im=document.createElement('img');im.src=img.url;im.alt=img.origName;
+    card.appendChild(idxBadge);card.appendChild(im);
+  }
+
   const lbl=document.createElement('div');lbl.className='lbl';
   const ext=img.origName.split('.').pop().toLowerCase();
   lbl.textContent=lot.lotNumber?`${lot.lotNumber}-${ii+1}.${ext}`:img.origName;
   const rm=document.createElement('div');rm.className='rm';rm.textContent='x';rm.title='Return to pool';
-  rm.addEventListener('click',e=>{e.stopPropagation();lot.images.splice(ii,1);pool.push({...img,selected:false});renderPool();renderLots();});
-
-  card.appendChild(idxBadge);card.appendChild(im);card.appendChild(lbl);card.appendChild(rm);
+  rm.addEventListener('click',e=>{
+    e.stopPropagation();
+    lot.images.splice(ii,1);
+    if(!img.missing)pool.push({...img,selected:false});
+    autoSave();renderPool();renderLots();
+  });
+  card.appendChild(lbl);card.appendChild(rm);
 
   card.addEventListener('dragstart',e=>{
     dragItem={type:'lot',lotId:lot.id,index:ii,item:img};
     setTimeout(()=>card.classList.add('dragging'),0);
     e.dataTransfer.effectAllowed='move';
   });
-  card.addEventListener('dragend',()=>{
-    card.classList.remove('dragging');
-    document.querySelectorAll('.drag-over-left,.drag-over-right').forEach(c=>c.classList.remove('drag-over-left','drag-over-right'));
-  });
-
+  card.addEventListener('dragend',()=>{card.classList.remove('dragging');document.querySelectorAll('.drag-over-left,.drag-over-right').forEach(c=>c.classList.remove('drag-over-left','drag-over-right'));});
   return card;
 }
 
 function getDropTarget(e,cards){
-  // Find which card the mouse is nearest to, and which side
   for(const card of cards){
-    const rect=card.getBoundingClientRect();
-    if(e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom){
-      const mid=rect.left+rect.width/2;
-      return{card,side:e.clientX<mid?'left':'right'};
+    const r=card.getBoundingClientRect();
+    if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){
+      return{card,side:e.clientX<r.left+r.width/2?'left':'right'};
     }
   }
   return{card:null,side:'right'};
 }
 
 function handleDropOnBucket(targetLot,insertAt,e){
-  // Files dropped from Windows Explorer
   if(e&&e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files.length>0&&(!dragItem||(dragItem.type!=='lot'&&dragItem.type!=='pool'))){
     const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')).sort((a,b)=>a.name.localeCompare(b.name));
     if(files.length){
-      const newImgs=files.map(f=>({file:f,url:URL.createObjectURL(f),origName:f.name}));
-      targetLot.images.splice(insertAt,0,...newImgs);
-      dragItem=null;renderPool();renderLots();return;
+      // Check if any match missing slots
+      files.forEach(f=>{
+        const missingSlot=targetLot.images.find(img=>img.missing&&img.origName===f.name);
+        if(missingSlot){missingSlot.url=URL.createObjectURL(f);missingSlot.file=f;delete missingSlot.missing;}
+        else targetLot.images.splice(insertAt,0,{file:f,url:URL.createObjectURL(f),origName:f.name});
+      });
+      dragItem=null;autoSave();renderPool();renderLots();return;
     }
   }
   if(!dragItem)return;
-
   if(dragItem.type==='pool'){
     const items=dragItem.multi?dragItem.multi:[dragItem.item];
     items.forEach(item=>{const pi=pool.findIndex(p=>p.origName===item.origName);if(pi>=0)pool.splice(pi,1);});
-    const newImgs=items.map(i=>({file:i.file,url:i.url,origName:i.origName}));
-    targetLot.images.splice(insertAt,0,...newImgs);
+    targetLot.images.splice(insertAt,0,...items.map(i=>({file:i.file,url:i.url,origName:i.origName})));
   } else if(dragItem.type==='lot'){
     const srcLot=lots.find(l=>l.id===dragItem.lotId);if(!srcLot)return;
-    const srcIdx=dragItem.index;
-    const moved=srcLot.images[srcIdx];
+    const moved=srcLot.images.splice(dragItem.index,1)[0];
     if(srcLot.id===targetLot.id){
-      // reorder within same lot
-      srcLot.images.splice(srcIdx,1);
-      let ti=insertAt;
-      if(ti>srcIdx)ti--;
+      let ti=insertAt;if(ti>dragItem.index)ti--;
       targetLot.images.splice(ti,0,moved);
     } else {
-      srcLot.images.splice(srcIdx,1);
       targetLot.images.splice(insertAt,0,moved);
     }
   }
-  dragItem=null;
+  dragItem=null;autoSave();renderPool();renderLots();
+}
+
+// ─── AUTO-SAVE ────────────────────────────────────────────────────
+function autoSave(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    try{
+      const data=buildSessionData();
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+      const t=new Date().toLocaleTimeString();
+      $('session-status').textContent=`✓ Auto-saved ${t}`;
+      $('session-status').className='session-status';
+    }catch(e){
+      $('session-status').textContent='⚠ Could not auto-save (storage full?)';
+      $('session-status').className='session-status warn';
+    }
+  },600);
+}
+
+function buildSessionData(){
+  return{
+    version:1,
+    savedAt:new Date().toISOString(),
+    nextLotNumber,
+    lotIdCounter,
+    startNum:$('start-num').value,
+    lots:lots.map(lot=>({
+      id:lot.id,
+      lotNumber:lot.lotNumber,
+      images:lot.images.map(img=>({
+        origName:img.origName,
+        missing:img.missing||(!img.file&&!img.url)||false
+      }))
+    })),
+    pool:pool.map(p=>({origName:p.origName,missing:false}))
+  };
+}
+
+// ─── RESTORE ──────────────────────────────────────────────────────
+function tryRestoreSession(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw)return;
+    const data=JSON.parse(raw);
+    if(!data||!data.lots)return;
+    nextLotNumber=data.nextLotNumber||101;
+    lotIdCounter=data.lotIdCounter||0;
+    if(data.startNum)$('start-num').value=data.startNum;
+
+    lots=data.lots.map(l=>({
+      id:l.id,
+      lotNumber:l.lotNumber,
+      images:l.images.map(img=>({
+        origName:img.origName,
+        missing:true, // files need re-dropping
+        url:'',file:null
+      }))
+    }));
+    pool=[];
+
+    const totalMissing=lots.reduce((s,l)=>s+l.images.length,0);
+    if(totalMissing>0){
+      $('restore-banner').style.display='flex';
+      $('restore-msg').textContent=`${lots.length} lot${lots.length!==1?'s':''} with ${totalMissing} photo slot${totalMissing!==1?'s':''} restored. Drop your photo folder or drag files into buckets to reload images.`;
+    }
+    const t=new Date(data.savedAt).toLocaleString();
+    $('session-status').textContent=`Session from ${t}`;
+    renderPool();renderLots();
+  }catch(e){console.warn('Session restore failed',e);}
+}
+
+// ─── EXPORT / IMPORT ──────────────────────────────────────────────
+function exportSession(){
+  const data=buildSessionData();
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`auction-session-${new Date().toISOString().slice(0,10)}.json`;a.click();
+  $('session-status').textContent='✓ Session exported';$('session-status').className='session-status';
+}
+
+function importSession(input){
+  const f=input.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+      lots=[];pool=[];
+      tryRestoreSession();
+      setStatus('Session loaded successfully.','ok');
+    }catch(err){setStatus('Could not read session file.','err');}
+  };
+  reader.readAsText(f);
+  input.value='';
+}
+
+function clearSession(){
+  if(!confirm('Clear all lots, buckets, and pool? This cannot be undone.'))return;
+  localStorage.removeItem(STORAGE_KEY);
+  lots=[];pool=[];lotIdCounter=0;nextLotNumber=parseInt($('start-num').value)||101;
+  $('restore-banner').style.display='none';
+  $('session-status').textContent='Session cleared';
   renderPool();renderLots();
 }
 
+// ─── DOWNLOAD ─────────────────────────────────────────────────────
 function updateDlSection(){
   const allLines=[],primaryLines=[];
   lots.forEach(lot=>{
@@ -431,7 +554,7 @@ function updateDlSection(){
     lot.images.forEach((img,ii)=>{
       const ext=img.origName.split('.').pop().toLowerCase();
       const n=`${lot.lotNumber}-${ii+1}.${ext}`;
-      allLines.push(`${img.origName} → ${n}`);
+      allLines.push(`${img.origName} → ${n}${img.missing?' ⚠ needs re-drop':''}`);
       if(ii===0)primaryLines.push(`${img.origName} → ${n} ★`);
     });
   });
@@ -443,31 +566,37 @@ function updateDlSection(){
 }
 
 async function doDownload(mode){
+  const missing=lots.some(l=>l.images.some(i=>i.missing));
+  if(missing&&!confirm('Some photos still need to be re-dropped and will be skipped. Continue?'))return;
   const btn=$(mode==='all'?'dl-all-btn':'dl-primary-btn');
   const stat=$(mode==='all'?'dl-all-status':'dl-primary-status');
-  const empty=lots.filter(l=>!l.lotNumber&&l.images.length);
-  if(empty.length&&!confirm(`${empty.length} lot(s) have no number and will be skipped. Continue?`))return;
   btn.disabled=true;btn.textContent='Building zip...';
   const zip=new JSZip();let count=0;
   for(const lot of lots){
     if(!lot.lotNumber||!lot.images.length)continue;
     const imgs=mode==='primary'?[lot.images[0]]:lot.images;
-    imgs.forEach((img,ii)=>{
+    for(let ii=0;ii<imgs.length;ii++){
+      const img=imgs[ii];
+      if(img.missing)continue;
       const ext=img.origName.split('.').pop().toLowerCase();
-      zip.file(`${lot.lotNumber}-${ii+1}.${ext}`,fetch(img.url).then(r=>r.blob()));
+      zip.file(`${lot.lotNumber}-${ii+1}.${ext}`,await fetch(img.url).then(r=>r.blob()));
       count++;
-    });
+    }
   }
   const content=await zip.generateAsync({type:'blob',compression:'STORE'},m=>{btn.textContent=`Zipping ${Math.round(m.percent)}%...`;});
   const a=document.createElement('a');a.href=URL.createObjectURL(content);
   a.download=mode==='primary'?'primary_images.zip':'all_images.zip';a.click();
-  btn.disabled=false;btn.textContent=mode==='all'?'↓ Download all images zip':'↓ Download primary images zip';
+  btn.disabled=false;
+  btn.textContent=mode==='all'?'↓ Download all images zip':'↓ Download primary images zip';
   stat.textContent=`✓ ${count} image${count!==1?'s':''} downloaded.`;stat.className='status ok';
 }
 
 function setStatus(msg,type){$('status-msg').textContent=msg;$('status-msg').className='status'+(type?' '+type:'');}
 function setProgress(v){$('prog-fill').style.width=Math.round(v*100)+'%';}
 async function tick(){return new Promise(r=>setTimeout(r,0));}
+
+// ─── INIT ─────────────────────────────────────────────────────────
+tryRestoreSession();
 </script>
 </body>
 </html>
