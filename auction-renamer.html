@@ -6,372 +6,430 @@
 <title>Auction Flex Image Renamer</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;min-height:100vh;padding:2rem 1rem}
-  #app{max-width:960px;margin:0 auto}
-  header{margin-bottom:2rem}
-  header h1{font-size:22px;font-weight:600;color:#1a1a1a;margin-bottom:4px}
-  header p{font-size:14px;color:#666}
-  .drop-zone{border:2px dashed #ccc;border-radius:12px;padding:2.5rem;text-align:center;cursor:pointer;transition:all 0.15s;background:#fff;margin-bottom:1rem}
-  .drop-zone:hover,.drop-zone.over{border-color:#555;background:#fafafa}
-  .drop-zone h3{font-size:16px;font-weight:500;margin-bottom:6px}
-  .drop-zone p{font-size:13px;color:#888}
-  .drop-zone a{color:#2563eb;text-decoration:none}
-  #file-input{display:none}
-  .prog-wrap{background:#e5e5e5;border-radius:4px;height:6px;margin:10px 0;display:none;overflow:hidden}
-  .prog-fill{height:100%;background:#2563eb;border-radius:4px;transition:width 0.1s;width:0%}
-  .status{font-size:13px;color:#666;padding:4px 0;min-height:20px}
-  .status.ok{color:#16a34a}
-  .status.err{color:#dc2626}
-  .stats-row{display:flex;gap:12px;margin:1rem 0;flex-wrap:wrap;display:none}
-  .stat-card{background:#fff;border:1px solid #e5e5e5;border-radius:8px;padding:10px 16px;min-width:110px}
-  .stat-card strong{font-size:22px;font-weight:600;display:block;color:#1a1a1a}
-  .stat-card span{font-size:12px;color:#888}
-  .toolbar{display:flex;gap:8px;margin:1rem 0;flex-wrap:wrap;align-items:center}
-  .filter-tabs{display:flex;gap:4px}
-  .tab{padding:5px 14px;font-size:12px;border-radius:8px;border:1px solid #ddd;cursor:pointer;background:#fff;color:#555;font-family:inherit}
-  .tab.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
-  button{padding:7px 16px;font-size:13px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#1a1a1a;cursor:pointer;font-family:inherit;transition:background 0.1s}
-  button:hover{background:#f0f0f0}
-  button.primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
-  button.primary:hover{background:#333}
-  button:disabled{opacity:0.4;cursor:default}
-  button.warn-btn{border-color:#d97706;color:#d97706}
-  button.warn-btn:hover{background:#fffbeb}
-  .lot-block{background:#fff;border:1px solid #e5e5e5;border-radius:10px;margin-bottom:8px;overflow:hidden}
-  .lot-block.flagged{border-color:#f59e0b}
-  .lot-header{display:flex;align-items:center;gap:10px;padding:9px 14px;background:#fafafa;border-bottom:1px solid #e5e5e5;flex-wrap:wrap}
-  .lot-label{font-size:12px;color:#888;white-space:nowrap}
-  .lot-num-input{width:76px;font-size:14px;font-weight:600;padding:4px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#1a1a1a;font-family:inherit}
-  .lot-num-input:focus{outline:none;border-color:#555}
-  .badge{font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap;font-weight:500}
-  .badge-ok{background:#dcfce7;color:#15803d}
-  .badge-warn{background:#fef9c3;color:#a16207}
-  .badge-info{background:#dbeafe;color:#1d4ed8}
-  .lot-actions{margin-left:auto;display:flex;gap:6px;align-items:center}
-  .sticker-thumb{width:30px;height:24px;object-fit:cover;border-radius:3px;border:1px solid #ddd;cursor:pointer}
-  .img-grid{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;min-height:64px}
-  .img-card{position:relative;width:84px;cursor:grab;border:1px solid #e5e5e5;border-radius:6px;overflow:hidden;background:#f5f5f5;user-select:none;transition:opacity 0.1s}
-  .img-card.dragging{opacity:0.3}
-  .img-card.drag-over{border:2px solid #2563eb}
-  .img-card img{width:84px;height:64px;object-fit:cover;display:block}
-  .img-card .idx{position:absolute;top:2px;left:2px;font-size:10px;font-weight:600;background:rgba(0,0,0,0.6);color:#fff;padding:1px 5px;border-radius:3px}
-  .img-card .rm{position:absolute;top:2px;right:2px;width:15px;height:15px;background:rgba(0,0,0,0.6);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:9px;color:#fff;line-height:1}
-  .img-card .lbl{font-size:9px;color:#888;padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .empty{font-size:13px;color:#888;padding:2rem;text-align:center}
-  .preview-box{font-size:11px;color:#555;font-family:'Courier New',monospace;background:#f5f5f0;border-radius:8px;padding:10px 14px;max-height:180px;overflow-y:auto;margin-top:10px;line-height:2;border:1px solid #e5e5e5}
-  .no-photos{font-size:12px;color:#aaa;padding:6px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0efe9;color:#1a1a1a;padding:1.5rem 1rem;min-height:100vh}
+#app{max-width:1100px;margin:0 auto}
+h1{font-size:20px;font-weight:600;margin-bottom:4px}
+.sub{font-size:13px;color:#777;margin-bottom:1.25rem}
+.drop-zone{border:2px dashed #ccc;border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;background:#fff;margin-bottom:1rem;transition:all 0.15s}
+.drop-zone:hover,.drop-zone.over{border-color:#555;background:#fafaf7}
+.drop-zone h3{font-size:15px;font-weight:500;margin-bottom:4px}
+.drop-zone p{font-size:13px;color:#888}
+.drop-zone a{color:#2563eb;text-decoration:none}
+#file-input{display:none}
+.prog-wrap{background:#e5e5e0;border-radius:4px;height:5px;margin:8px 0;display:none;overflow:hidden}
+.prog-fill{height:100%;background:#2563eb;border-radius:4px;transition:width 0.1s;width:0%}
+.status{font-size:13px;color:#666;padding:3px 0;min-height:18px}
+.status.ok{color:#16a34a}
+.status.err{color:#dc2626}
+.pool-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+.pool-header h2{font-size:15px;font-weight:600}
+.pool-count{font-size:12px;color:#888;font-weight:400;margin-left:6px}
+#pool-grid{display:flex;flex-wrap:wrap;gap:6px;min-height:60px;background:#fff;border:1px solid #ddd;border-radius:10px;padding:10px;margin-bottom:1.5rem}
+#pool-grid.drag-over-pool{background:#f0f7ff;border-color:#93c5fd}
+.pool-empty{font-size:13px;color:#aaa;padding:1rem;width:100%;text-align:center}
+.toolbar{display:flex;gap:8px;margin-bottom:1rem;align-items:center;flex-wrap:wrap}
+.start-num-wrap{display:flex;align-items:center;gap:6px;font-size:13px;color:#555}
+.start-num-wrap input{width:72px;font-size:14px;font-weight:600;padding:4px 8px;border:1px solid #ddd;border-radius:6px;background:#fff;color:#1a1a1a;font-family:inherit}
+button{padding:7px 15px;font-size:13px;border-radius:7px;border:1px solid #ddd;background:#fff;color:#1a1a1a;cursor:pointer;font-family:inherit;transition:all 0.1s;white-space:nowrap}
+button:hover{background:#f0f0eb}
+button.primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+button.primary:hover{background:#333}
+button.green{background:#16a34a;color:#fff;border-color:#16a34a}
+button.green:hover{background:#15803d}
+button.blue{background:#2563eb;color:#fff;border-color:#2563eb}
+button.blue:hover{background:#1d4ed8}
+button.amber{background:#d97706;color:#fff;border-color:#d97706}
+button.amber:hover{background:#b45309}
+button:disabled{opacity:0.4;cursor:default}
+#lots-area{display:flex;flex-direction:column;gap:10px}
+.lot-bucket{background:#fff;border:1px solid #e0e0da;border-radius:10px;overflow:hidden}
+.lot-bucket.drag-over-bucket{border-color:#2563eb;background:#f0f7ff}
+.bucket-header{display:flex;align-items:center;gap:10px;padding:9px 14px;background:#f7f7f2;border-bottom:1px solid #e5e5e0;flex-wrap:wrap}
+.lot-label{font-size:12px;color:#888;white-space:nowrap}
+.lot-num-input{width:74px;font-size:15px;font-weight:700;padding:3px 8px;border:1px solid #ccc;border-radius:6px;background:#fff;color:#1a1a1a;font-family:inherit}
+.lot-num-input:focus{outline:none;border-color:#555}
+.photo-count{font-size:12px;color:#888;background:#f0f0eb;padding:2px 8px;border-radius:5px}
+.primary-badge{font-size:11px;color:#d97706;background:#fef9c3;padding:2px 8px;border-radius:5px;font-weight:500}
+.bucket-actions{margin-left:auto;display:flex;gap:5px;flex-wrap:wrap}
+.bucket-actions button{font-size:11px;padding:3px 9px}
+.bucket-grid{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;min-height:72px}
+.bucket-grid.drag-over-bucket-inner{background:#f0f7ff}
+.bucket-empty{font-size:12px;color:#bbb;padding:4px;width:100%}
+.rename-preview{font-size:10px;color:#aaa;padding:2px 14px 8px;font-family:'Courier New',monospace;line-height:1.8;overflow-x:auto;white-space:nowrap}
+.img-card{position:relative;width:82px;cursor:grab;border:1px solid #e0e0da;border-radius:6px;overflow:hidden;background:#f5f5f0;user-select:none;transition:opacity 0.1s,border-color 0.1s}
+.img-card:hover{border-color:#aaa}
+.img-card.dragging{opacity:0.25;cursor:grabbing}
+.img-card.drag-over-card{border:2px solid #2563eb}
+.img-card.is-primary{border:2px solid #d97706}
+.img-card img{width:82px;height:62px;object-fit:cover;display:block}
+.img-card .idx{position:absolute;top:2px;left:2px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.6);color:#fff;padding:1px 5px;border-radius:3px}
+.img-card.is-primary .idx{background:rgba(217,119,6,0.9)}
+.img-card .rm{position:absolute;top:2px;right:2px;width:16px;height:16px;background:rgba(0,0,0,0.6);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:9px;color:#fff}
+.img-card .rm:hover{background:rgba(180,0,0,0.8)}
+.img-card .lbl{font-size:9px;color:#999;padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#fff}
+.dl-section{background:#fff;border:1px solid #e0e0da;border-radius:10px;padding:1.25rem;margin-top:1.5rem}
+.dl-section h3{font-size:14px;font-weight:600;margin-bottom:4px}
+.dl-section .note{font-size:12px;color:#888;margin-bottom:10px}
+.preview-box{font-size:11px;color:#555;font-family:'Courier New',monospace;background:#f7f7f2;border-radius:6px;padding:8px 12px;max-height:140px;overflow-y:auto;line-height:2;border:1px solid #e5e5e0;margin-bottom:10px}
+.dl-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.dl-row-label{font-size:13px;font-weight:500;min-width:160px}
+.primary-preview{font-size:11px;color:#a16207;font-family:'Courier New',monospace;background:#fefce8;border-radius:6px;padding:8px 12px;max-height:100px;overflow-y:auto;line-height:2;border:1px solid #fde68a;margin-bottom:10px}
+.divider{border:none;border-top:1px solid #e5e5e0;margin:12px 0}
 </style>
 </head>
 <body>
 <div id="app">
-  <header>
-    <h1>Auction Flex Image Renamer</h1>
-    <p>Drop your photo folder &rarr; stickers auto-detected &rarr; review &rarr; download zip. Handles 3,000+ images.</p>
-  </header>
+  <h1>Auction Flex Image Renamer</h1>
+  <p class="sub">Create lot buckets &rarr; drag photos from Windows Explorer directly into each bucket &rarr; reorder &rarr; download. The first photo in each bucket becomes the -1 primary image.</p>
 
   <div class="drop-zone" id="drop-zone">
     <input type="file" id="file-input" multiple accept="image/*">
-    <h3>Drop your entire photo folder here</h3>
-    <p>or <a href="#" id="browse-link">browse files</a> &nbsp;&middot;&nbsp; Works with 3,000+ images &nbsp;&middot;&nbsp; Nothing leaves your computer</p>
+    <h3>Optional: drop a folder to preload all images into the pool below</h3>
+    <p>or <a href="#" id="browse-link">browse files</a> &nbsp;&middot;&nbsp; You can also drag directly from Windows Explorer into any lot bucket &nbsp;&middot;&nbsp; Nothing leaves your computer</p>
   </div>
-
   <div class="prog-wrap" id="prog-wrap"><div class="prog-fill" id="prog-fill"></div></div>
   <div class="status" id="status-msg"></div>
 
-  <div class="stats-row" id="stats-row">
-    <div class="stat-card"><strong id="s-total">0</strong><span>total images</span></div>
-    <div class="stat-card"><strong id="s-lots">0</strong><span>lots found</span></div>
-    <div class="stat-card"><strong id="s-ok">0</strong><span>auto-detected</span></div>
-    <div class="stat-card"><strong id="s-flag">0</strong><span>need review</span></div>
-  </div>
-
-  <div id="main-ui" style="display:none">
-    <div class="toolbar">
-      <div class="filter-tabs">
-        <button class="tab active" onclick="setFilter('all',this)">All lots</button>
-        <button class="tab" onclick="setFilter('flagged',this)">Needs review</button>
-        <button class="tab" onclick="setFilter('ok',this)">Auto-detected</button>
+  <div id="work-area">
+    <!-- POOL -->
+    <div class="pool-header">
+      <h2>Unassigned pool <span class="pool-count" id="pool-count">(0 images)</span></h2>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="selectAll()">Select all</button>
+        <button onclick="clearSelection()">Clear selection</button>
+        <button class="green" onclick="assignSelectedToNew()" id="assign-btn" disabled>Move selected &rarr; new lot</button>
       </div>
-      <button onclick="addLot()">+ Add lot</button>
-      <button class="primary" id="dl-btn" onclick="doDownload()">&#8595; Download zip</button>
     </div>
-    <div id="lots-container"></div>
-    <div id="preview-area"></div>
+    <div id="pool-grid"><div class="pool-empty">Drop a folder above to preload images, or drag directly from Windows Explorer into lot buckets below.</div></div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="start-num-wrap">
+        <label>Starting lot #</label>
+        <input type="text" id="start-num" value="101" oninput="onStartNumChange()">
+      </div>
+      <button class="primary" onclick="addLot()">+ Add lot bucket</button>
+      <button onclick="addLotAndAssign()" id="add-assign-btn" disabled>+ New lot &amp; move selected</button>
+    </div>
+
+    <div id="lots-area"></div>
+
+    <!-- DOWNLOAD SECTION -->
+    <div class="dl-section" id="dl-section" style="display:none">
+      <h3>Download options</h3>
+      <p class="note">All photos are renamed to AuctionFlex format. The first photo in each bucket is the -1 primary image (shown with amber border above).</p>
+
+      <div class="dl-row">
+        <span class="dl-row-label">All renamed images:</span>
+        <button class="primary" id="dl-all-btn" onclick="doDownload('all')">&#8595; Download all images zip</button>
+        <span class="status" id="dl-all-status"></span>
+      </div>
+
+      <hr class="divider">
+
+      <div class="dl-row">
+        <span class="dl-row-label">Primary images only (-1):</span>
+        <button class="amber" id="dl-primary-btn" onclick="doDownload('primary')">&#8595; Download primary images zip</button>
+        <span class="status" id="dl-primary-status"></span>
+      </div>
+      <div class="primary-preview" id="primary-preview"></div>
+
+      <hr class="divider">
+      <div class="preview-box" id="preview-box"></div>
+    </div>
   </div>
 </div>
 
 <script>
 const $=id=>document.getElementById(id);
-let lots=[],dragSrc=null,currentFilter='all';
+let pool=[];
+let lots=[];
+let dragItem=null;
+let lotIdCounter=0;
+let nextLotNumber=101;
 
 $('browse-link').addEventListener('click',e=>{e.preventDefault();$('file-input').click()});
 $('drop-zone').addEventListener('dragover',e=>{e.preventDefault();$('drop-zone').classList.add('over')});
 $('drop-zone').addEventListener('dragleave',()=>$('drop-zone').classList.remove('over'));
-$('drop-zone').addEventListener('drop',e=>{e.preventDefault();$('drop-zone').classList.remove('over');handleFiles(Array.from(e.dataTransfer.files))});
-$('file-input').addEventListener('change',()=>handleFiles(Array.from($('file-input').files)));
+$('drop-zone').addEventListener('drop',e=>{e.preventDefault();$('drop-zone').classList.remove('over');load(Array.from(e.dataTransfer.files))});
+$('file-input').addEventListener('change',()=>load(Array.from($('file-input').files)));
 
-function handleFiles(files){
+async function load(files){
   const imgs=files.filter(f=>f.type.startsWith('image/')).sort((a,b)=>a.name.localeCompare(b.name));
   if(!imgs.length){setStatus('No image files found.','err');return;}
-  setStatus(`Loaded ${imgs.length} images. Scanning for lot stickers...`,'');
   $('prog-wrap').style.display='block';
-  lots=[];
-  processImages(imgs);
+  setStatus(`Loading ${imgs.length} images...`,'');
+  for(let i=0;i<imgs.length;i++){
+    const f=imgs[i];
+    pool.push({file:f,url:URL.createObjectURL(f),origName:f.name,selected:false});
+    if(i%100===0){setProgress((i+1)/imgs.length);await tick();}
+  }
+  setProgress(1);$('prog-wrap').style.display='none';
+  setStatus(`${imgs.length} images loaded into pool.`,'ok');
+  renderPool();
 }
 
-async function processImages(imgs){
-  const allItems=imgs.map(f=>({file:f,url:URL.createObjectURL(f),origName:f.name}));
-  const groups=[];
-  let cur=[];
-
-  for(let i=0;i<allItems.length;i++){
-    const item=allItems[i];
-    const result=await quickStickerCheck(item.file,item.url);
-    if(result.isSticker){
-      if(cur.length>0){
-        groups.push({images:cur,stickerFile:item.file,stickerUrl:item.url,detectedNum:result.num,confidence:result.confidence});
-        cur=[];
-      }
+function renderPool(){
+  const grid=$('pool-grid');grid.innerHTML='';
+  $('pool-count').textContent=`(${pool.length} image${pool.length!==1?'s':''})`;
+  if(!pool.length){grid.innerHTML='<div class="pool-empty">Pool is empty. Drag directly from Windows Explorer into lot buckets below.</div>';updateDlSection();return;}
+  pool.forEach((item,i)=>{
+    const card=document.createElement('div');
+    card.className='img-card';
+    card.style.outline=item.selected?'2px solid #2563eb':'none';
+    card.style.outlineOffset='1px';
+    card.draggable=true;card.dataset.pi=i;
+    const im=document.createElement('img');im.src=item.url;im.alt=item.origName;
+    const lbl=document.createElement('div');lbl.className='lbl';lbl.textContent=item.origName;
+    card.appendChild(im);card.appendChild(lbl);
+    card.addEventListener('click',e=>{
+      if(e.shiftKey){
+        const lastSel=pool.findLastIndex(p=>p.selected);
+        if(lastSel>=0){const lo=Math.min(lastSel,i),hi=Math.max(lastSel,i);for(let j=lo;j<=hi;j++)pool[j].selected=true;}
+        else pool[i].selected=!pool[i].selected;
+      } else if(e.ctrlKey||e.metaKey){pool[i].selected=!pool[i].selected;}
+      else pool[i].selected=!pool[i].selected;
+      updateSelectionButtons();renderPool();
+    });
+    card.addEventListener('dragstart',e=>{
+      dragItem={type:'pool',index:i,item:pool[i]};
+      if(pool[i].selected) dragItem.multi=pool.filter(p=>p.selected);
+      card.classList.add('dragging');e.dataTransfer.effectAllowed='move';
+    });
+    card.addEventListener('dragend',()=>card.classList.remove('dragging'));
+    grid.appendChild(card);
+  });
+  grid.addEventListener('dragover',e=>{e.preventDefault();grid.classList.add('drag-over-pool')});
+  grid.addEventListener('dragleave',()=>grid.classList.remove('drag-over-pool'));
+  grid.addEventListener('drop',e=>{
+    e.preventDefault();grid.classList.remove('drag-over-pool');
+    if(!dragItem||dragItem.type!=='lot')return;
+    const lot=lots.find(l=>l.id===dragItem.lotId);if(!lot)return;
+    if(dragItem.multi){
+      dragItem.multi.forEach(img=>{const idx=lot.images.indexOf(img);if(idx>=0){lot.images.splice(idx,1);pool.push({...img,selected:false});}});
     } else {
-      cur.push(item);
+      const idx=lot.images.indexOf(dragItem.item);if(idx>=0){lot.images.splice(idx,1);pool.push({...dragItem.item,selected:false});}
     }
-    if(i%80===0||i===allItems.length-1){
-      setProgress(0.1+0.85*(i/allItems.length));
-      setStatus(`Scanning ${i+1} of ${allItems.length}...`,'');
-      await new Promise(r=>setTimeout(r,0));
-    }
-  }
-  if(cur.length>0) groups.push({images:cur,stickerFile:null,stickerUrl:null,detectedNum:'',confidence:0});
-
-  lots=groups.map(g=>({
-    images:g.images,
-    stickerFile:g.stickerFile,
-    stickerUrl:g.stickerUrl,
-    lotNumber:g.detectedNum,
-    confidence:g.confidence,
-    flagged:g.confidence<0.7||!g.detectedNum
-  }));
-
-  setProgress(1);
-  updateStats();
-  renderAll();
-  $('stats-row').style.display='flex';
-  $('main-ui').style.display='block';
-  $('prog-wrap').style.display='none';
-  const f=lots.filter(l=>l.flagged).length;
-  setStatus(`Done. ${lots.length} lots found across ${allItems.length} images. ${f} need review.`,f>0?'':'ok');
-}
-
-async function quickStickerCheck(file,url){
-  return new Promise(resolve=>{
-    const img=new Image();
-    img.onload=()=>{
-      const c=document.createElement('canvas');
-      const MAX=200;
-      const scale=Math.min(MAX/img.naturalWidth,MAX/img.naturalHeight,1);
-      c.width=Math.round(img.naturalWidth*scale);
-      c.height=Math.round(img.naturalHeight*scale);
-      const ctx=c.getContext('2d');
-      ctx.drawImage(img,0,0,c.width,c.height);
-      const data=ctx.getImageData(0,0,c.width,c.height).data;
-      const total=data.length/4;
-      let whitePx=0;
-      for(let i=0;i<data.length;i+=4){
-        const br=(data[i]+data[i+1]+data[i+2])/3;
-        if(br>200&&Math.max(data[i],data[i+1],data[i+2])-Math.min(data[i],data[i+1],data[i+2])<30) whitePx++;
-      }
-      const wr=whitePx/total;
-      const regions=analyseRegions(data,c.width,c.height);
-      const confidence=regions.hasWhiteRect&&regions.hasDarkText?0.85:(wr>0.45?0.6:0.1);
-      resolve({isSticker:confidence>=0.6,num:'',confidence});
-    };
-    img.onerror=()=>resolve({isSticker:false,num:'',confidence:0});
-    img.src=url;
+    renderPool();renderLots();
   });
+  updateSelectionButtons();updateDlSection();
 }
 
-function analyseRegions(data,w,h){
-  let wb=0,db=0;
-  const bx=Math.floor(w/4),by=Math.floor(h/4);
-  for(let gy=0;gy<4;gy++){
-    for(let gx=0;gx<4;gx++){
-      let wc=0,dc=0,count=0;
-      for(let py=gy*by;py<(gy+1)*by&&py<h;py++){
-        for(let px=gx*bx;px<(gx+1)*bx&&px<w;px++){
-          const i=(py*w+px)*4;
-          const br=(data[i]+data[i+1]+data[i+2])/3;
-          if(br>210)wc++;else if(br<60)dc++;
-          count++;
-        }
-      }
-      if(wc/count>0.6)wb++;
-      if(dc/count>0.05)db++;
+function updateSelectionButtons(){
+  const sel=pool.filter(p=>p.selected).length;
+  $('assign-btn').disabled=sel===0;
+  $('add-assign-btn').disabled=sel===0;
+}
+
+function selectAll(){pool.forEach(p=>p.selected=true);updateSelectionButtons();renderPool();}
+function clearSelection(){pool.forEach(p=>p.selected=false);updateSelectionButtons();renderPool();}
+
+function assignSelectedToNew(){
+  const selected=pool.filter(p=>p.selected);if(!selected.length)return;
+  const lot=createLot();
+  selected.forEach(item=>lot.images.push({file:item.file,url:item.url,origName:item.origName}));
+  pool=pool.filter(p=>!p.selected);
+  renderPool();renderLots();
+}
+
+function addLotAndAssign(){assignSelectedToNew();}
+function onStartNumChange(){const v=parseInt($('start-num').value);if(!isNaN(v))nextLotNumber=v;}
+
+function createLot(){
+  const lot={id:++lotIdCounter,lotNumber:String(nextLotNumber),images:[]};
+  nextLotNumber++;lots.push(lot);return lot;
+}
+
+function addLot(){createLot();renderLots();}
+
+function removeLot(id){
+  const lot=lots.find(l=>l.id===id);if(!lot)return;
+  lot.images.forEach(img=>pool.push({...img,selected:false}));
+  lots=lots.filter(l=>l.id!==id);
+  renderPool();renderLots();
+}
+
+function renderLots(){
+  const area=$('lots-area');area.innerHTML='';
+  if(!lots.length){updateDlSection();return;}
+  lots.forEach(lot=>{
+    const block=document.createElement('div');
+    block.className='lot-bucket';block.dataset.lid=lot.id;
+
+    const hdr=document.createElement('div');hdr.className='bucket-header';
+    const lbl=document.createElement('span');lbl.className='lot-label';lbl.textContent='Lot #:';
+    const inp=document.createElement('input');inp.className='lot-num-input';inp.type='text';inp.value=lot.lotNumber;
+    inp.addEventListener('input',e=>{lot.lotNumber=e.target.value.trim();renderLots();});
+    inp.addEventListener('click',e=>e.stopPropagation());
+
+    const cnt=document.createElement('span');cnt.className='photo-count';
+    cnt.textContent=lot.images.length+' photo'+(lot.images.length!==1?'s':'');
+
+    // Primary image indicator
+    if(lot.images.length>0){
+      const pb=document.createElement('span');pb.className='primary-badge';
+      const ext=lot.images[0].origName.split('.').pop().toLowerCase();
+      pb.textContent=`Primary: ${lot.lotNumber}-1.${ext}`;
+      hdr.appendChild(lbl);hdr.appendChild(inp);hdr.appendChild(cnt);hdr.appendChild(pb);
+    } else {
+      hdr.appendChild(lbl);hdr.appendChild(inp);hdr.appendChild(cnt);
     }
-  }
-  return{hasWhiteRect:wb>=3,hasDarkText:db>=1};
+
+    const acts=document.createElement('div');acts.className='bucket-actions';
+    const upBtn=document.createElement('button');upBtn.textContent='↑ Up';
+    upBtn.addEventListener('click',()=>{const i=lots.indexOf(lot);if(i>0){lots.splice(i,1);lots.splice(i-1,0,lot);renderLots();}});
+    const dnBtn=document.createElement('button');dnBtn.textContent='↓ Down';
+    dnBtn.addEventListener('click',()=>{const i=lots.indexOf(lot);if(i<lots.length-1){lots.splice(i,1);lots.splice(i+1,0,lot);renderLots();}});
+    const clrBtn=document.createElement('button');clrBtn.textContent='Return photos';
+    clrBtn.addEventListener('click',()=>{lot.images.forEach(img=>pool.push({...img,selected:false}));lot.images=[];renderPool();renderLots();});
+    const delBtn=document.createElement('button');delBtn.textContent='Delete lot';delBtn.style.color='#dc2626';delBtn.style.borderColor='#fca5a5';
+    delBtn.addEventListener('click',()=>removeLot(lot.id));
+    acts.appendChild(upBtn);acts.appendChild(dnBtn);acts.appendChild(clrBtn);acts.appendChild(delBtn);
+    hdr.appendChild(acts);
+
+    const grid=document.createElement('div');grid.className='bucket-grid';grid.dataset.lid=lot.id;
+
+    lot.images.forEach((img,ii)=>grid.appendChild(makeBucketCard(img,lot,ii)));
+    if(!lot.images.length){
+      const emp=document.createElement('div');emp.className='bucket-empty';
+      emp.textContent='Drop photos here from Windows Explorer or from the pool above — first photo becomes the primary (-1) image';
+      grid.appendChild(emp);
+    }
+
+    grid.addEventListener('dragover',e=>{e.preventDefault();grid.classList.add('drag-over-bucket-inner');});
+    grid.addEventListener('dragleave',e=>{if(!grid.contains(e.relatedTarget))grid.classList.remove('drag-over-bucket-inner');});
+    grid.addEventListener('drop',e=>{e.preventDefault();grid.classList.remove('drag-over-bucket-inner');handleDropOnBucket(lot,null,e);});
+
+    // Rename preview line
+    const prev=document.createElement('div');prev.className='rename-preview';
+    if(lot.images.length&&lot.lotNumber){
+      prev.textContent=lot.images.map((img,ii)=>{
+        const ext=img.origName.split('.').pop().toLowerCase();
+        return `${lot.lotNumber}-${ii+1}.${ext}${ii===0?' ★':''}`;
+      }).join('   ');
+    }
+
+    block.appendChild(hdr);block.appendChild(grid);
+    if(lot.images.length)block.appendChild(prev);
+    area.appendChild(block);
+  });
+  updateDlSection();
 }
 
-function updateStats(){
-  const f=lots.filter(l=>l.flagged).length;
-  $('s-total').textContent=lots.reduce((s,l)=>s+l.images.length,0);
-  $('s-lots').textContent=lots.length;
-  $('s-ok').textContent=lots.length-f;
-  $('s-flag').textContent=f;
-}
+function makeBucketCard(img,lot,ii){
+  const isPrimary=ii===0;
+  const card=document.createElement('div');
+  card.className='img-card'+(isPrimary?' is-primary':'');
+  card.draggable=true;card.dataset.lid=lot.id;card.dataset.ii=ii;
 
-function setFilter(f,el){
-  currentFilter=f;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  renderAll();
-}
-
-function renderAll(){
-  const c=$('lots-container');c.innerHTML='';
-  const visible=lots.filter(l=>currentFilter==='all'?true:currentFilter==='flagged'?l.flagged:!l.flagged);
-  if(!visible.length){c.innerHTML='<div class="empty">No lots in this view.</div>';return;}
-  visible.forEach(lot=>c.appendChild(makeLotBlock(lot,lots.indexOf(lot))));
-  updatePreview();
-}
-
-function makeLotBlock(lot,li){
-  const block=document.createElement('div');
-  block.className='lot-block'+(lot.flagged?' flagged':'');
-
-  const hdr=document.createElement('div');hdr.className='lot-header';
-
-  const numWrap=document.createElement('div');numWrap.style.display='flex';numWrap.style.alignItems='center';numWrap.style.gap='6px';
-  const lbl=document.createElement('span');lbl.className='lot-label';lbl.textContent='Lot:';
-  const inp=document.createElement('input');inp.className='lot-num-input';inp.type='text';inp.value=lot.lotNumber;inp.placeholder='?';
-  inp.addEventListener('input',e=>{lots[li].lotNumber=e.target.value.trim();lots[li].flagged=!e.target.value.trim();block.className='lot-block'+(lots[li].flagged?' flagged':'');updateStats();updatePreview();});
-  numWrap.appendChild(lbl);numWrap.appendChild(inp);
-
-  const badge=document.createElement('span');
-  badge.className='badge '+(lot.flagged?'badge-warn':'badge-ok');
-  badge.textContent=lot.flagged?'needs review':'auto-detected';
-
-  const cnt=document.createElement('span');cnt.className='badge badge-info';
-  cnt.textContent=lot.images.length+' photo'+(lot.images.length!==1?'s':'');
-
-  const acts=document.createElement('div');acts.className='lot-actions';
-
-  if(lot.flagged&&lot.stickerFile){
-    const aiBtn=document.createElement('button');
-    aiBtn.className='warn-btn';aiBtn.textContent='Ask AI';aiBtn.style.fontSize='11px';aiBtn.style.padding='3px 9px';
-    aiBtn.addEventListener('click',()=>askAI(li,aiBtn,inp));
-    acts.appendChild(aiBtn);
-  }
-  if(lot.stickerUrl){
-    const th=document.createElement('img');th.src=lot.stickerUrl;th.className='sticker-thumb';th.title='Sticker photo';
-    acts.appendChild(th);
-  }
-  const del=document.createElement('button');del.textContent='Remove';del.style.fontSize='11px';del.style.padding='3px 9px';
-  del.addEventListener('click',()=>{lots.splice(li,1);updateStats();renderAll();});
-  acts.appendChild(del);
-
-  hdr.appendChild(numWrap);hdr.appendChild(badge);hdr.appendChild(cnt);hdr.appendChild(acts);
-
-  const grid=document.createElement('div');grid.className='img-grid';grid.dataset.li=li;
-  lot.images.forEach((img,ii)=>grid.appendChild(makeCard(img,li,ii)));
-  if(!lot.images.length)grid.innerHTML='<p class="no-photos">No product photos</p>';
-  enableGridDrop(grid);
-
-  block.appendChild(hdr);block.appendChild(grid);
-  return block;
-}
-
-async function askAI(li,btn,inp){
-  if(!lots[li].stickerFile)return;
-  btn.disabled=true;btn.textContent='Reading...';
-  const reader=new FileReader();
-  reader.onload=async()=>{
-    const b64=reader.result.split(',')[1];
-    try{
-      const res=await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:30,
-          messages:[{role:'user',content:[
-            {type:'image',source:{type:'base64',media_type:lots[li].stickerFile.type,data:b64}},
-            {type:'text',text:'This photo has a lot number sticker label. Reply with ONLY the lot number digits, nothing else.'}
-          ]}]})
-      });
-      const d=await res.json();
-      const m=(d.content?.[0]?.text||'').match(/\d+/);
-      if(m){lots[li].lotNumber=m[0];lots[li].flagged=false;lots[li].confidence=0.95;inp.value=m[0];updateStats();renderAll();}
-      else{btn.textContent='Not found';btn.disabled=false;}
-    }catch(e){btn.textContent='Error';btn.disabled=false;}
-  };
-  reader.readAsDataURL(lots[li].stickerFile);
-}
-
-function makeCard(img,li,ii){
-  const card=document.createElement('div');card.className='img-card';card.draggable=true;card.dataset.li=li;card.dataset.ii=ii;
-  const idx=document.createElement('div');idx.className='idx';idx.textContent=ii+1;
+  const idxBadge=document.createElement('div');idxBadge.className='idx';
+  idxBadge.textContent=isPrimary?'★ 1':ii+1;
   const im=document.createElement('img');im.src=img.url;im.alt=img.origName;
-  const lbl=document.createElement('div');lbl.className='lbl';lbl.textContent=img.origName;
-  const rm=document.createElement('div');rm.className='rm';rm.textContent='x';
-  rm.addEventListener('click',e=>{e.stopPropagation();lots[li].images.splice(ii,1);updateStats();renderAll();});
-  card.appendChild(idx);card.appendChild(im);card.appendChild(lbl);card.appendChild(rm);
-  card.addEventListener('dragstart',e=>{dragSrc=card;card.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
-  card.addEventListener('dragend',()=>card.classList.remove('dragging'));
-  card.addEventListener('dragover',e=>{e.preventDefault();card.classList.add('drag-over');});
-  card.addEventListener('dragleave',()=>card.classList.remove('drag-over'));
-  card.addEventListener('drop',e=>{
-    e.preventDefault();card.classList.remove('drag-over');
-    if(!dragSrc||dragSrc===card)return;
-    const fl=parseInt(dragSrc.dataset.li),fi=parseInt(dragSrc.dataset.ii);
-    const tl=parseInt(card.dataset.li),ti=parseInt(card.dataset.ii);
-    lots[tl].images.splice(ti,0,lots[fl].images.splice(fi,1)[0]);
-    renderAll();
+  const lbl=document.createElement('div');lbl.className='lbl';
+  const ext=img.origName.split('.').pop().toLowerCase();
+  lbl.textContent=lot.lotNumber?`${lot.lotNumber}-${ii+1}.${ext}`:img.origName;
+  const rm=document.createElement('div');rm.className='rm';rm.textContent='x';rm.title='Return to pool';
+  rm.addEventListener('click',e=>{e.stopPropagation();lot.images.splice(ii,1);pool.push({...img,selected:false});renderPool();renderLots();});
+
+  card.appendChild(idxBadge);card.appendChild(im);card.appendChild(lbl);card.appendChild(rm);
+
+  card.addEventListener('dragstart',e=>{
+    dragItem={type:'lot',lotId:lot.id,index:ii,item:img};
+    card.classList.add('dragging');e.dataTransfer.effectAllowed='move';
   });
+  card.addEventListener('dragend',()=>card.classList.remove('dragging'));
+  card.addEventListener('dragover',e=>{e.preventDefault();card.classList.add('drag-over-card');});
+  card.addEventListener('dragleave',()=>card.classList.remove('drag-over-card'));
+  card.addEventListener('drop',e=>{e.preventDefault();card.classList.remove('drag-over-card');handleDropOnBucket(lot,ii,e);});
   return card;
 }
 
-function enableGridDrop(grid){
-  grid.addEventListener('dragover',e=>e.preventDefault());
-  grid.addEventListener('drop',e=>{
-    e.preventDefault();if(!dragSrc)return;
-    const tl=parseInt(grid.dataset.li),fl=parseInt(dragSrc.dataset.li),fi=parseInt(dragSrc.dataset.ii);
-    lots[tl].images.push(lots[fl].images.splice(fi,1)[0]);
-    renderAll();
+function handleDropOnBucket(targetLot,targetIndex,e){
+  // Handle files dropped directly from Windows Explorer
+  if(e&&e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files.length>0&&(!dragItem||dragItem.type!=='lot'&&dragItem.type!=='pool')){
+    const files=Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')).sort((a,b)=>a.name.localeCompare(b.name));
+    if(files.length){
+      const newImgs=files.map(f=>({file:f,url:URL.createObjectURL(f),origName:f.name}));
+      if(targetIndex!=null){targetLot.images.splice(targetIndex,0,...newImgs);}
+      else targetLot.images.push(...newImgs);
+      renderPool();renderLots();return;
+    }
+  }
+
+  if(!dragItem)return;
+  if(dragItem.type==='pool'){
+    const items=dragItem.multi?dragItem.multi:[dragItem.item];
+    items.forEach(item=>{const pi=pool.findIndex(p=>p.origName===item.origName);if(pi>=0)pool.splice(pi,1);});
+    const newImgs=items.map(item=>({file:item.file,url:item.url,origName:item.origName}));
+    if(targetIndex!=null)targetLot.images.splice(targetIndex,0,...newImgs);
+    else targetLot.images.push(...newImgs);
+  } else if(dragItem.type==='lot'){
+    const srcLot=lots.find(l=>l.id===dragItem.lotId);if(!srcLot)return;
+    const moved=srcLot.images.splice(dragItem.index,1)[0];
+    if(srcLot.id===targetLot.id){
+      let ti=targetIndex!=null?targetIndex:targetLot.images.length;
+      if(ti>dragItem.index)ti--;
+      targetLot.images.splice(ti,0,moved);
+    } else {
+      if(targetIndex!=null)targetLot.images.splice(targetIndex,0,moved);
+      else targetLot.images.push(moved);
+    }
+  }
+  dragItem=null;
+  renderPool();renderLots();
+}
+
+function updateDlSection(){
+  const allLines=[],primaryLines=[];
+  lots.forEach(lot=>{
+    if(!lot.lotNumber||!lot.images.length)return;
+    lot.images.forEach((img,ii)=>{
+      const ext=img.origName.split('.').pop().toLowerCase();
+      const newName=`${lot.lotNumber}-${ii+1}.${ext}`;
+      allLines.push(`${img.origName} → ${newName}`);
+      if(ii===0) primaryLines.push(`${img.origName} → ${newName} ★`);
+    });
   });
+  const sec=$('dl-section');
+  if(!allLines.length){sec.style.display='none';return;}
+  sec.style.display='block';
+  const showAll=allLines.slice(0,80);
+  $('preview-box').innerHTML=showAll.join('<br>')+(allLines.length>80?`<br><em>...and ${allLines.length-80} more</em>`:'');
+  $('primary-preview').innerHTML=primaryLines.join('<br>');
 }
 
-function addLot(){lots.push({images:[],stickerFile:null,stickerUrl:null,lotNumber:'',confidence:0,flagged:true});updateStats();renderAll();}
-
-function updatePreview(){
-  const lines=[];
-  lots.forEach(lot=>{if(!lot.lotNumber)return;lot.images.forEach((img,ii)=>{const ext=img.origName.split('.').pop().toLowerCase();lines.push(`${img.origName} &rarr; ${lot.lotNumber}-${ii+1}.${ext}`);});});
-  const area=$('preview-area');
-  if(lines.length){const show=lines.slice(0,60);area.innerHTML=`<div class="preview-box">${show.join('<br>')}${lines.length>60?`<br><em>...and ${lines.length-60} more</em>`:''}</div>`;}
-  else area.innerHTML='';
-}
-
-async function doDownload(){
-  const btn=$('dl-btn');
-  const f=lots.filter(l=>l.flagged&&l.images.length>0);
-  if(f.length>0&&!confirm(`${f.length} lot(s) have no lot number and will be skipped. Continue?`))return;
+async function doDownload(mode){
+  const btnId=mode==='all'?'dl-all-btn':'dl-primary-btn';
+  const statusId=mode==='all'?'dl-all-status':'dl-primary-status';
+  const btn=$(btnId);
+  const emptyLots=lots.filter(l=>!l.lotNumber&&l.images.length>0);
+  if(emptyLots.length&&!confirm(`${emptyLots.length} lot(s) have no number and will be skipped. Continue?`))return;
   btn.disabled=true;btn.textContent='Building zip...';
   const zip=new JSZip();let count=0;
   for(const lot of lots){
-    if(!lot.lotNumber)continue;
-    for(let ii=0;ii<lot.images.length;ii++){
+    if(!lot.lotNumber||!lot.images.length)continue;
+    const imagesToInclude=mode==='primary'?[lot.images[0]]:lot.images;
+    for(let ii=0;ii<(mode==='primary'?1:lot.images.length);ii++){
       const img=lot.images[ii];
       const ext=img.origName.split('.').pop().toLowerCase();
-      zip.file(`${lot.lotNumber}-${ii+1}.${ext}`,await fetch(img.url).then(r=>r.blob()));
+      const newName=`${lot.lotNumber}-${ii+1}.${ext}`;
+      zip.file(newName,await fetch(img.url).then(r=>r.blob()));
       count++;
     }
   }
+  const fname=mode==='primary'?'primary_images.zip':'all_images.zip';
   const content=await zip.generateAsync({type:'blob',compression:'STORE'},m=>{btn.textContent=`Zipping ${Math.round(m.percent)}%...`;});
-  const a=document.createElement('a');a.href=URL.createObjectURL(content);a.download='auction_flex_images.zip';a.click();
-  btn.disabled=false;btn.textContent='&#8595; Download zip';
-  setStatus(`Downloaded ${count} renamed images.`,'ok');
+  const a=document.createElement('a');a.href=URL.createObjectURL(content);a.download=fname;a.click();
+  btn.disabled=false;
+  btn.textContent=mode==='all'?'↓ Download all images zip':'↓ Download primary images zip';
+  $(statusId).textContent=`✓ ${count} image${count!==1?'s':''} downloaded.`;
+  $(statusId).className='status ok';
 }
 
 function setStatus(msg,type){$('status-msg').textContent=msg;$('status-msg').className='status'+(type?' '+type:'');}
 function setProgress(v){$('prog-fill').style.width=Math.round(v*100)+'%';}
+async function tick(){return new Promise(r=>setTimeout(r,0));}
 </script>
 </body>
 </html>
