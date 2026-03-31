@@ -117,9 +117,10 @@ hr.divider{border:none;border-top:1px solid #e5e5e0;margin:12px 0}
   </div>
 
   <div class="drop-zone" id="drop-zone">
-    <input type="file" id="file-input" multiple accept="image/*">
-    <h3>Optional: drop a folder to preload images into the pool</h3>
-    <p>or <a href="#" id="browse-link">browse files</a> &nbsp;&middot;&nbsp; You can also drag directly from Windows Explorer into any lot bucket &nbsp;&middot;&nbsp; Nothing leaves your computer</p>
+    <input type="file" id="file-input" multiple accept="image/*,.zip">
+    <input type="file" id="zip-input" accept=".zip" style="display:none">
+    <h3>Drop a <strong>.zip file</strong> or a folder to load images into the pool</h3>
+    <p>or <a href="#" id="browse-link">browse images</a> &nbsp;&middot;&nbsp; <a href="#" id="browse-zip-link">browse zip</a> &nbsp;&middot;&nbsp; Drag directly from Windows Explorer into lot buckets &nbsp;&middot;&nbsp; Nothing leaves your computer</p>
   </div>
   <div class="prog-wrap" id="prog-wrap"><div class="prog-fill" id="prog-fill"></div></div>
   <div class="status" id="status-msg"></div>
@@ -175,10 +176,79 @@ let saveTimer=null;
 
 // ─── FILE LOADING ───────────────────────────────────────────────
 $('browse-link').addEventListener('click',e=>{e.preventDefault();$('file-input').click()});
+$('browse-zip-link').addEventListener('click',e=>{e.preventDefault();$('zip-input').click()});
 $('drop-zone').addEventListener('dragover',e=>{e.preventDefault();$('drop-zone').classList.add('over')});
 $('drop-zone').addEventListener('dragleave',()=>$('drop-zone').classList.remove('over'));
-$('drop-zone').addEventListener('drop',e=>{e.preventDefault();$('drop-zone').classList.remove('over');loadFiles(Array.from(e.dataTransfer.files))});
-$('file-input').addEventListener('change',()=>loadFiles(Array.from($('file-input').files)));
+$('drop-zone').addEventListener('drop',e=>{
+  e.preventDefault();$('drop-zone').classList.remove('over');
+  const files=Array.from(e.dataTransfer.files);
+  const zips=files.filter(f=>f.name.toLowerCase().endsWith('.zip'));
+  const imgs=files.filter(f=>f.type.startsWith('image/'));
+  if(zips.length) loadZip(zips[0]);
+  else if(imgs.length) loadFiles(imgs);
+  else setStatus('No images or zip file found.','err');
+});
+$('file-input').addEventListener('change',()=>{
+  const files=Array.from($('file-input').files);
+  const zips=files.filter(f=>f.name.toLowerCase().endsWith('.zip'));
+  const imgs=files.filter(f=>f.type.startsWith('image/'));
+  if(zips.length) loadZip(zips[0]);
+  else loadFiles(imgs);
+  $('file-input').value='';
+});
+$('zip-input').addEventListener('change',()=>{
+  if($('zip-input').files[0]) loadZip($('zip-input').files[0]);
+  $('zip-input').value='';
+});
+
+async function loadZip(zipFile){
+  $('prog-wrap').style.display='block';
+  setStatus(`Reading zip: ${zipFile.name}...`,'');
+  try{
+    const jszip=new JSZip();
+    const zip=await jszip.loadAsync(zipFile);
+    // Collect all image entries, skip __MACOSX and hidden files
+    const imageExts=/\.(jpe?g|png|gif|webp|bmp|tiff?)$/i;
+    const entries=[];
+    zip.forEach((path,entry)=>{
+      if(entry.dir)return;
+      const name=path.split('/').pop();
+      if(!name||name.startsWith('.')||path.includes('__MACOSX'))return;
+      if(imageExts.test(name))entries.push({path,entry,name});
+    });
+    if(!entries.length){setStatus('No images found in zip.','err');$('prog-wrap').style.display='none';return;}
+    // Sort by filename
+    entries.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+    setStatus(`Extracting ${entries.length} images from zip...`,'');
+    const missingNames=new Set();
+    lots.forEach(lot=>lot.images.forEach(img=>{if(img.missing)missingNames.add(img.origName);}));
+    for(let i=0;i<entries.length;i++){
+      const {entry,name}=entries[i];
+      const blob=await entry.async('blob');
+      // Detect mime type from extension
+      const ext=name.split('.').pop().toLowerCase();
+      const mime=ext==='jpg'||ext==='jpeg'?'image/jpeg':ext==='png'?'image/png':ext==='gif'?'image/gif':ext==='webp'?'image/webp':'image/'+ext;
+      const typedBlob=new Blob([blob],{type:mime});
+      const file=new File([typedBlob],name,{type:mime});
+      const url=URL.createObjectURL(typedBlob);
+      let filled=false;
+      if(missingNames.has(name)){
+        lots.forEach(lot=>lot.images.forEach(img=>{
+          if(img.origName===name&&img.missing){img.url=url;img.file=file;delete img.missing;filled=true;}
+        }));
+      }
+      if(!filled) pool.push({file,url,origName:name,selected:false});
+      if(i%20===0){setProgress((i+1)/entries.length);await tick();}
+    }
+    setProgress(1);$('prog-wrap').style.display='none';
+    setStatus(`✓ ${entries.length} images extracted from ${zipFile.name}.`,'ok');
+    autoSave();renderPool();renderLots();
+  }catch(err){
+    $('prog-wrap').style.display='none';
+    setStatus('Could not read zip file. Make sure it is a valid zip.','err');
+    console.error('Zip load error:',err);
+  }
+}
 
 async function loadFiles(files){
   const imgs=files.filter(f=>f.type.startsWith('image/')).sort((a,b)=>a.name.localeCompare(b.name));
@@ -191,7 +261,6 @@ async function loadFiles(files){
   for(let i=0;i<imgs.length;i++){
     const f=imgs[i];
     const url=URL.createObjectURL(f);
-    // Fill missing slots in lots
     let filled=false;
     if(missingNames.has(f.name)){
       lots.forEach(lot=>lot.images.forEach(img=>{
